@@ -35,6 +35,7 @@ This script uses a breadth-first search (BFS) algorithm to find the shortest pat
 ## Optimization
 
 I want this to be optimized, so any suggestions or contributions to enhance the performance and efficiency of the scripts are welcome!
+See the [CONTRIBUTING.md](CONTRIBUTING.md) file for detailed guidelines on how to contribute.
 
 ## Contributing
 
