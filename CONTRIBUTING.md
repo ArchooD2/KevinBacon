@@ -8,7 +8,7 @@ Thank you for considering contributing to KevinBacon! Your help is greatly appre
 
 2. **Clone your fork**: 
     ```sh
-    git clone https://github.com/yourusername/KevinBacon.git
+    git clone https://github.com/ArchooD2/KevinBacon.git
     ```
 
 3. **Create a branch**: 
