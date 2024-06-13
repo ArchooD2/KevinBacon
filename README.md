@@ -15,7 +15,7 @@ KevinBacon is a Python script designed to find the shortest path between two Wik
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/KevinBacon.git
+    git clone https://github.com/ArchooD2/KevinBacon.git
     ```
 2. Navigate to the project directory:
     ```sh
