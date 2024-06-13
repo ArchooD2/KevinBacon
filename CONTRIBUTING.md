@@ -40,6 +40,6 @@ Thank you for considering contributing to KevinBacon! Your help is greatly appre
 
 ## Getting Help
 
-If you need help, feel free to open an issue or reach out via [your.email@example.com].
+If you need help, feel free to open an issue.
 
 Thank you for contributing!
