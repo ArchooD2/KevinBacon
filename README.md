@@ -34,12 +34,12 @@ This script uses a breadth-first search (BFS) algorithm to find the shortest pat
 
 ## Optimization
 
-I want this to be optimized, so any suggestions or contributions to enhance the performance and efficiency of the scripts are welcome!
+I want this to be optimized, so any suggestions or contributions to enhance the performance and efficiency of the script (or new scripts) are welcome!
 See the [CONTRIBUTING.md](CONTRIBUTING.md) file for detailed guidelines on how to contribute.
 
 ## Contributing
 
-This project is open for public use. Feel free to fork the repository, make improvements, and submit pull requests. If you use this in a project, just credit me in the code, please!
+This project is open for public use. Feel free to fork the repository, make improvements, and submit pull requests. If you use this in a project, just credit me somewhere!
 
 ## License
 
