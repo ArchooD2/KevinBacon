@@ -2,6 +2,16 @@ import wikipediaapi
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 import time
+import argparse
+
+def args() :
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--s', type=str, help='Source Article')
+    parser.add_argument('--t', type=str, help='Destination Article')
+
+    args = parser.parse_args()
+    
+    return args.s , args.t
 
 def find_shortest_path(start_title, end_title="Kevin Bacon", max_depth=7):
     # Initialize Wikipedia API
@@ -64,7 +74,6 @@ def find_shortest_path(start_title, end_title="Kevin Bacon", max_depth=7):
     
     print(f"Execution time: {end_time - start_time:.2f} seconds")
 
-# Example usage
-start_article = "Susan B. Anthony"
-end_article = "Avian influenza"
-find_shortest_path(start_article, end_article)
+if __name__ == "__main__" :
+    start_article, end_article = args()
+    find_shortest_path(start_article, end_article)
