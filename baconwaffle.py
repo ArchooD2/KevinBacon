@@ -5,15 +5,20 @@ import time
 import argparse
 
 def args() :
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--s', type=str, help='Source Article')
-    parser.add_argument('--t', type=str, help='Destination Article')
-
+    parser = argparse.ArgumentParser(description='Find the shortest path between two Wikipedia articles.')
+    parser.add_argument('--source', '-s', type=str, required=True, help='Source Article')
+    parser.add_argument('--target', '-t', type=str, help='Destination Article')
+    parser.add_argument('--depth', '-d', type=int, help='Depth Maximum')
     args = parser.parse_args()
     
-    return args.s , args.t
+    return args.source , args.target , args.depth
 
-def find_shortest_path(start_title, end_title="Kevin Bacon", max_depth=7):
+def find_shortest_path(start_title, end_title=None, max_depth=None):
+    if end_title is None:
+        end_title = "Kevin Bacon"
+    if max_depth is None:
+        max_depth = 7
+
     # Initialize Wikipedia API
     user_agent = "KevinBaconScript/1.0 (archood2next@gmail.com)bot"
     wiki = wikipediaapi.Wikipedia(user_agent)
@@ -21,10 +26,14 @@ def find_shortest_path(start_title, end_title="Kevin Bacon", max_depth=7):
     def get_links(title):
         page = wiki.page(title)
         if page.exists():
-            links = [link for link in page.links.keys() if not any(
-                link.startswith(prefix) or keyword in link.lower() for prefix in ["Category:", "Help:", "Wikipedia:", "Template:", "Template talk:", "Portal:", "List"] 
-                for keyword in ["election", "conference"]
-            )]
+            links = [
+                link for link in page.links.keys() 
+                if not any(
+                    link.startswith(prefix) or keyword in link.lower() 
+                    for prefix in ["Category:", "Help:", "Wikipedia:", "Template:", "Template talk:", "Portal:", "List"] 
+                    for keyword in ["election", "conference"]
+                )
+            ]
             return links
         return []
 
@@ -75,5 +84,5 @@ def find_shortest_path(start_title, end_title="Kevin Bacon", max_depth=7):
     print(f"Execution time: {end_time - start_time:.2f} seconds")
 
 if __name__ == "__main__" :
-    start_article, end_article = args()
-    find_shortest_path(start_article, end_article)
+    start_article, end_article, depth = args()
+    find_shortest_path(start_article, end_article, depth)
