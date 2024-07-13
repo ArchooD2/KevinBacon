@@ -1,4 +1,9 @@
 # KevinBacon
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/ArchooD2/KevinBacon)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/w/ArchooD2/KevinBacon)
+![GitHub top language](https://img.shields.io/github/languages/top/ArchooD2/KevinBacon)
+![GitHub Issues or Pull Requests by label](https://img.shields.io/github/issues/ArchooD2/KevinBacon/good-first-issue)
+
 
 Python Script to detect the fastest way between a start and end Wikipedia article.
 
