@@ -5,11 +5,14 @@ from baconwaffle import find_shortest_path
 def search_path():
     start = source_entry.get()
     end = target_entry.get()
-    depth = int(depth_entry.get())
+    try:
+        depth = int(depth_entry.get())
+    except:
+        depth = None
     result_text.delete(1.0, tk.END)  # Clear previous results
     
     # Run find_shortest_path in a separate thread
-    threading.Thread(target=run_search_path, args=(start, end, depth)).start()
+    threading.Thread(target=run_search_path, args=(start, None if not end else end, None if not depth else depth)).start()
 
 def run_search_path(start, end, depth):
     result = find_shortest_path(start, end, depth)

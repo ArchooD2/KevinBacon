@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BaconWaffle Wikipedia Path Finder</title>
+    <link rel="stylesheet" href="https://en.wikipedia.org/w/load.php?modules=site.styles&only=styles&skin=vector">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f6f6f6;
+            margin: 0;
+            padding: 0;
+        }
+        .mw-body {
+            margin: 0 auto;
+            width: 80%;
+            padding: 20px;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+        }
+        h1 {
+            font-size: 1.8em;
+            margin: 0.5em 0;
+        }
+        .infobox {
+            background-color: #f9f9f9;
+            border: 1px solid #a2a9b1;
+            padding: 0.5em;
+            margin-bottom: 1em;
+        }
+        .mw-parser-output label {
+            display: block;
+            margin: 0.5em 0 0.2em 0;
+        }
+        .mw-parser-output input {
+            width: 100%;
+            padding: 0.5em;
+            margin-bottom: 1em;
+            box-sizing: border-box;
+        }
+        .mw-parser-output button {
+            padding: 0.5em 1em;
+            margin-right: 0.5em;
+            background-color: #3366cc;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .mw-parser-output button:hover {
+            background-color: #2a4e8a;
+        }
+        #result {
+            white-space: pre-wrap;
+            border: 1px solid #a2a9b1;
+            padding: 1em;
+            background-color: #f9f9f9;
+        }
+        .header, .footer {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-bottom: 1px solid #a2a9b1;
+            text-align: center;
+        }
+        .footer {
+            border-top: 1px solid #a2a9b1;
+            border-bottom: none;
+            margin-top: auto;
+        }
+        .content {
+            display: flex;
+        }
+        .main {
+            flex: 3;
+            padding: 10px;
+        }
+        .sidebar {
+            flex: 1;
+            background-color: #f9f9f9;
+            border: 1px solid #a2a9b1;
+            padding: 10px;
+            margin-left: 10px;
+        }
+        .timer {
+            margin: 1em 0;
+            font-size: 1.2em;
+            color: #d33;
+        }
+    </style>
+    <script>
+        let timerInterval;
+
+        async function searchPath() {
+            const start = document.getElementById('source').value;
+            const end = document.getElementById('target').value;
+            const depth = document.getElementById('depth').value;
+
+            const response = await fetch('/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ start: start, end: end, depth: depth ? parseInt(depth) : null }),
+            });
+
+            const result = await response.json();
+            if (result.status === 'searching') {
+                startTimer();
+                startEventSource();
+            }
+        }
+
+        function startTimer() {
+            let seconds = 0;
+            const timerElement = document.getElementById('timer');
+            timerInterval = setInterval(() => {
+                seconds++;
+                timerElement.textContent = `Time elapsed: ${seconds} seconds`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function startEventSource() {
+            const eventSource = new EventSource('/events');
+            eventSource.onmessage = function(event) {
+                const resultElement = document.getElementById('result');
+                resultElement.innerHTML = event.data;
+                if (!event.data.startsWith("Searching")) {
+                    stopTimer();
+                    eventSource.close();
+                }
+            };
+        }
+    </script>
+</head>
+<body>
+    <div class="header">
+        <h1>BaconWaffle Wikipedia Path Finder</h1>
+    </div>
+    <div class="mw-body">
+        <div class="content">
+            <div class="main">
+                <div class="infobox">
+                    <div class="mw-parser-output">
+                        <label for="source">Source Article:</label>
+                        <input type="text" id="source" name="source">
+                        <label for="target">Target Article:</label>
+                        <input type="text" id="target" name="target">
+                        <label for="depth">Maximum Depth:</label>
+                        <input type="number" id="depth" name="depth">
+                        <button onclick="searchPath()">Search</button>
+                        <button onclick="document.getElementById('result').textContent=''">Clear</button>
+                    </div>
+                </div>
+                <div class="infobox">
+                    <h2>Result</h2>
+                    <div id="timer" class="timer">Time elapsed: 0 seconds</div>
+                    <pre id="result"></pre>
+                </div>
+            </div>
+            <div class="sidebar">
+                <h2>Did you know...</h2>
+                <p>...that Wikipedia has over 6 million articles?</p>
+                <p>...that the longest article on Wikipedia is over 22,000 words long?</p>
+                <p>...that Wikipedia is available in over 300 languages?</p>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        <p>Powered by Flask &amp; BaconWaffle</p>
+    </div>
+</body>
+</html>
