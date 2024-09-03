@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BaconWaffle Wikipedia Path Finder</title>
+    <link rel="stylesheet" href="https://en.wikipedia.org/w/load.php?modules=site.styles&only=styles&skin=vector">
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f6f6f6;
+            margin: 0;
+            padding: 0;
+        }
+        .mw-body {
+            margin: 0 auto;
+            width: 80%;
+            padding: 20px;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+        }
+        h1 {
+            font-size: 1.8em;
+            margin: 0.5em 0;
+        }
+        .infobox {
+            background-color: #f9f9f9;
+            border: 1px solid #a2a9b1;
+            padding: 0.5em;
+            margin-bottom: 1em;
+        }
+        .mw-parser-output label {
+            display: block;
+            margin: 0.5em 0 0.2em 0;
+        }
+        .mw-parser-output input {
+            width: 100%;
+            padding: 0.5em;
+            margin-bottom: 1em;
+            box-sizing: border-box;
+        }
+        .mw-parser-output button {
+            padding: 0.5em 1em;
+            margin-right: 0.5em;
+            background-color: #3366cc;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .mw-parser-output button:hover {
+            background-color: #2a4e8a;
+        }
+        #result {
+            white-space: pre-wrap;
+            border: 1px solid #a2a9b1;
+            padding: 1em;
+            background-color: #f9f9f9;
+        }
+        .header, .footer {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-bottom: 1px solid #a2a9b1;
+            text-align: center;
+        }
+        .footer {
+            border-top: 1px solid #a2a9b1;
+            border-bottom: none;
+            margin-top: auto;
+        }
+        .content {
+            display: flex;
+        }
+        .main {
+            flex: 3;
+            padding: 10px;
+        }
+        .sidebar {
+            flex: 1;
+            background-color: #f9f9f9;
+            border: 1px solid #a2a9b1;
+            padding: 10px;
+            margin-left: 10px;
+        }
+        .timer {
+            margin: 1em 0;
+            font-size: 1.2em;
+            color: #d33;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>BaconWaffle Wikipedia Path Finder</h1>
+    </div>
+    <div class="mw-body">
+        <div class="content">
+            <div class="main">
+                <div class="infobox">
+                    <div class="mw-parser-output">
+                        <label for="source">Source Article:</label>
+                        <input type="text" id="source" name="source" value="Python (programming language)">
+                        <label for="target">Target Article:</label>
+                        <input type="text" id="target" name="target" value="Kevin Bacon">
+                        <label for="depth">Maximum Depth:</label>
+                        <input type="number" id="depth" name="depth" value="7">
+                        <button onclick="searchPath()">Search</button>
+                        <button onclick="clearResult()">Clear</button>
+                    </div>
+                </div>
+                <div class="infobox">
+                    <h2>Result</h2>
+                    <div id="timer" class="timer">Time elapsed: 0 seconds</div>
+                    <pre id="result"></pre>
+                </div>
+            </div>
+            <div class="sidebar">
+                <h2>Did you know...</h2>
+                <p>...that Wikipedia has over 6 million articles?</p>
+                <p>...that the longest article on Wikipedia is over 22,000 words long?</p>
+                <p>...that Wikipedia is available in over 300 languages?</p>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        <p>Powered by BaconWaffle</p>
+    </div>
+
+    <script>
+        let timerInterval;
+
+        function clearResult() {
+            document.getElementById('result').textContent = '';
+        }
+
+        async function getLinks(title) {
+            const url = `https://en.wikipedia.org/w/api.php?action=parse&format=json&origin=*&prop=text&page=${encodeURIComponent(title)}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            const links = [];
+    
+            const excludedPrefixes = ["Category:", "Help:", "Wikipedia:", "Template:", "Template talk:", "Portal:", "List", "User:", "Main Page", "User talk:", "Talk:", "Wikipedia", "Draft"];
+            const excludedKeywords = ["election", "conference"];
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(data.parse.text["*"], 'text/html');
+    
+            const allLinks = [...doc.querySelectorAll('a')];
+    
+            // Collect all links that are not in navbox
+            for (let link of allLinks) {
+                const linkTitle = link.title;
+                const parentNavbox = link.closest('.navbox');
+
+                if (!linkTitle || parentNavbox) {
+                    continue;
+                }
+    
+                const isExcluded = excludedPrefixes.some(prefix => linkTitle.startsWith(prefix)) ||
+                                   excludedKeywords.some(keyword => linkTitle.toLowerCase().includes(keyword));
+    
+                if (!isExcluded) {
+                    links.push(linkTitle);
+                }
+            }
+            return links;
+        }
+
+        async function isValidPath(start, end, path) {
+            let current = start;
+
+            for (let step of path) {
+                if (current === end) return true;
+
+                // Fetch the raw HTML of the current page
+                const url = `https://en.wikipedia.org/wiki/${encodeURIComponent(current)}`;
+                const response = await fetch(url);
+                const html = await response.text();
+
+                // Parse the HTML to find links
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // Collect all links in the page
+                const allLinks = Array.from(doc.querySelectorAll('a')).map(link => link.title);
+
+                // Collect all links within navbox elements
+                const navboxLinks = new Set(
+                    Array.from(doc.querySelectorAll('.navbox a')).map(link => link.title)
+                );
+
+                // Filter the links: include only those not within navbox
+                const validLinks = allLinks.filter(link => link && !navboxLinks.has(link));
+
+                // Check if the next step in the path is a valid link and not inside a navbox
+                if (validLinks.includes(step)) {
+                    current = step;
+                } else {
+                    return false;
+                }
+            }
+
+            return current === end;
+        }
+
+        async function getBacklinks(title) {
+            const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&list=backlinks&bllimit=max&bltitle=${encodeURIComponent(title)}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            const backlinks = [];
+
+            const excludedPrefixes = ["Category:", "Help:", "Wikipedia:", "Template:", "Template talk:", "Portal:", "List", "User:", "Main Page", "User talk:", "Talk:", "Wikipedia", "Draft"];
+            const excludedKeywords = ["election", "conference"];
+
+            if (data.query && data.query.backlinks) {
+                for (let backlink of data.query.backlinks) {
+                    const linkTitle = backlink.title;
+
+                    const isExcluded = excludedPrefixes.some(prefix => linkTitle.startsWith(prefix)) ||
+                                       excludedKeywords.some(keyword => linkTitle.toLowerCase().includes(keyword));
+
+                    if (!isExcluded) {
+                        backlinks.push(linkTitle);
+                    }
+                }
+            }
+            return backlinks;
+        }
+        async function forwardBFS(forwardQueue, forwardVisited, backwardVisited, maxDepth) {
+            const { title, path } = forwardQueue.shift();
+            if (path.length > maxDepth) return null;
+
+            const links = await getLinks(title);
+
+            for (let link of links) {
+                if (!forwardVisited[link]) {
+                    const newPath = [...path, link];
+                    forwardVisited[link] = newPath;
+                    forwardQueue.push({ title: link, path: newPath });
+
+                    if (backwardVisited[link]) {
+                        return [...newPath, ...backwardVisited[link].reverse().slice(1)];
+                    }
+                }
+            }
+            return null;
+        }
+
+        async function backwardBFS(backwardQueue, backwardVisited, forwardVisited, maxDepth) {
+            const { title, path } = backwardQueue.shift();
+            if (path.length > maxDepth) return null;
+
+            const backlinks = await getBacklinks(title);
+
+            for (let link of backlinks) {
+                if (!backwardVisited[link]) {
+                    const newPath = [...path, link];
+                    backwardVisited[link] = newPath;
+                    backwardQueue.push({ title: link, path: newPath });
+
+                    if (forwardVisited[link]) {
+                        return [...forwardVisited[link], ...newPath.reverse().slice(1)];
+                    }
+                }
+            }
+            return null;
+        }
+
+        async function bidirectionalBFS(start, end, maxDepth) {
+            const forwardQueue = [{ title: start, path: [start] }];
+            const backwardQueue = [{ title: end, path: [end] }];
+            const forwardVisited = { [start]: [start] };
+            const backwardVisited = { [end]: [end] };
+
+            while (forwardQueue.length && backwardQueue.length) {
+                const forwardResult = await forwardBFS(forwardQueue, forwardVisited, backwardVisited, maxDepth);
+                if (forwardResult && await isValidPath(start, end, forwardResult)) return forwardResult;
+
+                const backwardResult = await backwardBFS(backwardQueue, backwardVisited, forwardVisited, maxDepth);
+                if (backwardResult && await isValidPath(start, end, backwardResult)) return backwardResult;
+            }
+
+            return null;
+        }
+
+        async function searchPath() {
+            clearResult();
+
+            const start = document.getElementById('source').value;
+            const end = document.getElementById('target').value;
+            const depth = parseInt(document.getElementById('depth').value);
+
+            const startTime = Date.now();
+            const path = await bidirectionalBFS(start, end, depth);
+            const endTime = Date.now();
+
+            if (path) {
+                document.getElementById('result').textContent = `Found a path from '${start}' to '${end}':\n\n` + path.join(' -> ');
+            } else {
+                document.getElementById('result').textContent = `No path found from '${start}' to '${end}' within depth ${depth}.`;
+            }
+
+            document.getElementById('timer').textContent = `Time elapsed: ${(endTime - startTime) / 1000} seconds`;
+        }
+    </script>
+</body>
+</html>
