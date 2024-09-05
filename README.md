@@ -28,11 +28,15 @@ KevinBacon is a Python script designed to find the shortest path between two Wik
     cd KevinBacon
     ```
 3.
-    a. Run the script:
+    a. Run the requirements file:
+    ```sh
+    pip install -r requirements.txt
+    ```
+    b. Run the script:
     ```sh
     python baconwaffle.py "start article" "end article" "depth"
     ```
-   b. Run the GUIscript:
+   c. Run the GUIscript:
     ```sh
     python bacongui.py
     ```
