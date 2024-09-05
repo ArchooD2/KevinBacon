@@ -1,8 +1,17 @@
-import wikipediaapi
+# Standard library imports
+import os
+import time
+import json
+import argparse
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
-import time
-import argparse
+
+# Third-party library imports
+import wikipediaapi
+
+current_dir = os.path.dirname(__file__)  # Directory of baconwaffle.py
+json_file_path = os.path.join(current_dir, 'json_cache', 'cache.json')
+
 
 def args():
     parser = argparse.ArgumentParser(description='Find the shortest path between two Wikipedia articles.')
@@ -18,6 +27,10 @@ def find_shortest_path(start_title, end_title=None, max_depth=None):
         end_title = "Kevin Bacon"
     if max_depth is None:
         max_depth = 7
+    cached_flag = check_or_save(start_title.lower(), end_title.lower())
+    if cached_flag:
+        print(f"Found path from {start_title} to {end_title}")
+        return
 
     # Initialize Wikipedia API
     user_agent = "KevinBaconScript/1.0 (archood2next@gmail.com)bot"
@@ -142,11 +155,29 @@ def find_shortest_path(start_title, end_title=None, max_depth=None):
     if path:
         print(f"Found a path from '{start_title}' to '{end_title}':")
         print_path(path)
+        check_or_save(start_title.lower(), end_title.lower(), save=True)
         return path
     else:
         print(f"No path found from '{start_title}' to '{end_title}' within depth {max_depth}.")
-        return False
-    
+
+
+def check_or_save(start_title, end_title, save=False) -> bool:
+    with open(json_file_path, mode='r', encoding='utf-8') as _fp:
+        saved_path_file = json.load(_fp) or {}
+    if save:
+        saved_path_file.update({
+            f"{start_title}-{end_title}": "yes"
+        })
+        print("Saving this path in file, for faster access")
+        with open(json_file_path, 'w') as _fp:
+            json.dump(saved_path_file, _fp)
+    else:
+        _check = saved_path_file.get(f"{start_title}-{end_title}")
+        if not _check:
+            print("Not saved in cache memory, running wikipedia query")
+            return False
+        return True
+
 
 def print_path(path):
     for i, step in enumerate(path):
