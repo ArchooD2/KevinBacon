@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 import threading
 import logging
 from baconwaffle import find_shortest_path
