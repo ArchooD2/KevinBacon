@@ -12,6 +12,8 @@ Python Script to detect the fastest way between a start and end Wikipedia articl
 
 KevinBacon is a Python script designed to find the shortest path between two Wikipedia articles. It uses the Wikipedia API to travel through links and determine the quickest route from the starting article to the destination article.
 
+Uses [snaparg](https://github.com/ArchooD2/snaparg)!
+
 ## Features
 
 - Pathfinding between Wikipedia articles
