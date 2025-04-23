@@ -21,6 +21,7 @@ jobs:
           pip install pytest
           pip install black
           pip install Wikipedia-API
+          pip install snaparg
 
       - name: Run tests
         run: pytest

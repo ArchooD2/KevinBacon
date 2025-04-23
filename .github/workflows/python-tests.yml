@@ -28,6 +28,7 @@ jobs:
         pip install pytest
         pip install Wikipedia-API
         pip install black
+        pip install snaparg
 
     - name: Run black (code formatting check)
       run: |

@@ -2,7 +2,7 @@
 import os
 import time
 import json
-import argparse
+import snaparg as argparse
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 
